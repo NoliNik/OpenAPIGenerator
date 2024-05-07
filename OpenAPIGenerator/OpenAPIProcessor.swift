@@ -68,8 +68,10 @@ class SwaggerProcessor {
         schemes[ref] = ObjectScheme.placeholder
 
         let keyPath = ref.components(separatedBy: "/").dropFirst().joined(separator: ".")
-        print("xxxx \(keyPath)")
-        var  info = json?.value(forKeyPath: keyPath) as! [String: Any]
+        guard var info = json?.value(forKeyPath: keyPath) as? [String: Any] else {
+            print("ERROR no model \(keyPath)")
+            return
+        }
         info["title"] = keyPath.components(separatedBy: ".").last
 
         schemes[ref] = ObjectScheme(info: info, processor: self)

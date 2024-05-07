@@ -152,7 +152,13 @@ class PrimitiveObject: CustomStringConvertible {
 
     init(info: [String: Any], processor: SwaggerProcessor) {
         self.processor = processor
-        self.type = ParameterType(rawValue: info["type"] as? String ?? (info["$ref"] != nil ? "object" : "none"))!
+
+        if let properties = (info["properties"] as? [String: Any]),
+           properties["file"] != nil {
+            self.type = .file
+        } else {
+            self.type = ParameterType(rawValue: info["type"] as? String ?? (info["$ref"] != nil ? "object" : "none"))!
+        }
 
         if let format = info["format"] as? String {
             self.format = ParameterFormat(rawValue: format)!
