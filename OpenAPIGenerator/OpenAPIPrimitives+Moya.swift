@@ -16,7 +16,7 @@ extension PropertyObject {
         let dataString: String
         switch type {
         case .file:
-            dataString = "\(nameSwiftString).moyaFormData(name: \"\(nameSwiftString)\")"
+            dataString = "\(nameSwiftString)?.moyaFormData(name: \"\(nameSwiftString)\")"
         default:
             dataString = "MultipartFormData(provider: .data(String(describing: \(nameSwiftString)).data(using: .utf8)!), name: \"\(nameSwiftString)\")"
         }

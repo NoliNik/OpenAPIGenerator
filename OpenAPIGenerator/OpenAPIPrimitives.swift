@@ -79,7 +79,7 @@ class Operation: CustomStringConvertible {
             info["name"] = "request"
             info["required"] = requestBody["required"] ?? false
             info["description"] = "request"
-            info["in"] = "body"
+            info["in"] = key == "multipart/form-data" ? "formData" : "body"
             parameters.append(OperationParameter(info: info, processor: processor))
         }
 
