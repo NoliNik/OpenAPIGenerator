@@ -76,7 +76,7 @@ class Operation: CustomStringConvertible {
         for (key, value) in (requestBody["content"] as? [String: [String: Any]]) ?? [:] {
             self.consumes = [key]
             var info = value
-            info["name"] = "request"
+            info["name"] = key == "multipart/form-data" ? "file" : "request"
             info["required"] = requestBody["required"] ?? false
             info["description"] = "request"
             info["in"] = key == "multipart/form-data" ? "formData" : "body"
