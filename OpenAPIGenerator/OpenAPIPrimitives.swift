@@ -14,6 +14,7 @@ enum ParameterType: String {
     case string
     case boolean
     case object
+    case dictionary
     case array
     case number
     case file
@@ -146,7 +147,7 @@ class PrimitiveObject: CustomStringConvertible {
     }
 
     let format: ParameterFormat?
-    let type: ParameterType
+    private(set) var type: ParameterType
     let items: PrimitiveObject?
     let schema: String?
 
@@ -170,6 +171,10 @@ class PrimitiveObject: CustomStringConvertible {
 
         if let items = info["items"] as? [String: Any] {
             self.items = PrimitiveObject(info: items, processor: processor)
+        } else if let properties = info["additionalProperties"] as? [String: String],
+                  properties.first?.key == "$ref" {
+            self.items = PrimitiveObject(info: properties, processor: processor)
+            self.type = .dictionary
         } else {
             self.items = nil
         }

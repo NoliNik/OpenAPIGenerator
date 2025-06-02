@@ -8,6 +8,7 @@ extension ParameterType {
         case .string: return "String"
         case .boolean: return "Bool"
         case .object: return "AnyObjectValue"
+        case .dictionary: return "[String: AnyObjectValue]"
         case .array: return "[AnyObjectValue]"
         case .number: return "Double"
         case .file: return "FileValue"
@@ -35,6 +36,7 @@ extension PrimitiveObject {
         case .string: return type.swiftString
         case .boolean: return type.swiftString
         case .object: return (schema != nil ? processor.schemes[schema!]?.title.escaped : nil) ?? type.swiftString
+        case .dictionary: return "[\(ParameterType.string.swiftString): \(items!.typeSwiftString)]"
         case .array: return "[\(items!.typeSwiftString)]"
         case .number: return format?.swiftString ?? type.swiftString
         case .file: return type.swiftString
