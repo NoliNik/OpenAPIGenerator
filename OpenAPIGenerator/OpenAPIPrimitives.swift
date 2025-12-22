@@ -26,6 +26,7 @@ enum ParameterFormat: String {
     case int32
     case int64
     case dateTime = "date-time"
+    case binary
 }
 
 enum AuthorizationType {
