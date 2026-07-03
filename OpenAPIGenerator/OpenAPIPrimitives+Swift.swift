@@ -25,6 +25,7 @@ extension ParameterFormat {
         case .int64: return "Int64"
         case .dateTime: return "Int64"
         case .binary: return "Data"
+        case .email: return "email"
         }
     }
 }
