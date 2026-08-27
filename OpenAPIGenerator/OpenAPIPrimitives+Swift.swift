@@ -93,19 +93,32 @@ extension ObjectScheme {
         strings.append(contentsOf: sorted.map({ $0.swiftString(useVar: useVar) }))
         strings.append("")
 
-        let params = sorted.map({
-            if optinalInit && !$0.required {
-                return $0.nameTypeSwiftString + " = nil"
-            } else {
-                return $0.nameTypeSwiftString
-            }
-        }).joined(separator: ", ")
-        strings.append("\(indent)\(genNonClassAccessLevel) init(\(params)) {")
+        strings.append(makeInitializer(with: sorted, optinalInit: optinalInit))
         strings.append(contentsOf: sorted.map({ "\(indent)\(indent)self.\($0.nameSwiftString) = \($0.nameSwiftString)" }))
         strings.append("\(indent)}")
 
         strings.append("}")
 
         return strings.joined(separator: "\n")
+    }
+
+    func makeInitializer(with sortedParams: [PropertyObject], optinalInit: Bool) -> String {
+        let params = sortedParams.map({
+            if optinalInit && !$0.required {
+                return $0.nameTypeSwiftString + " = nil"
+            } else {
+                return $0.nameTypeSwiftString
+            }
+        })
+
+        var paramsString = params.joined(separator: ", ")
+        var initCandidate = "\(indent)\(genNonClassAccessLevel) init(\(paramsString)) {"
+        guard initCandidate.count > maxStringLength else {
+            return initCandidate
+        }
+
+        paramsString = params.joined(separator: ",\n\(indent)\(indent)")
+        initCandidate = "\(indent)\(genNonClassAccessLevel) init(\n\(indent)\(indent)\(paramsString)\n\(indent)) {"
+        return initCandidate
     }
 }
