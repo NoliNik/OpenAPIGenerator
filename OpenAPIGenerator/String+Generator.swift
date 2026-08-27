@@ -18,6 +18,8 @@ let defaultSyncMainCheck = """
 
 var genSyncMainCheck = defaultSyncMainCheck
 
+let maxStringLength = 120
+
 extension String {
     var escaped: String {
         var result = self.filter { $0.isLetter || $0.isNumber || $0 == "_" }
