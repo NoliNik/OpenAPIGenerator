@@ -21,7 +21,6 @@ class SwaggerMoyaGenerator {
     var generateServer: Bool = false
     var initDefault: Bool = false
     var varStruct: Bool = false
-    var asyncAwaitVersion: String = "@available(iOS 15.0.0, *)"
     var syncOnMain: Bool = false
     var useAsyncCallbackQueue: Bool = false
 
@@ -36,19 +35,21 @@ class SwaggerMoyaGenerator {
         genSyncMainCheck = syncOnMain ? "" : defaultSyncMainCheck
         genAccessLevel = accessModifier
         genNonClassAccessLevel = nonClassAccessModifier
-        genAsyncAwaitVersion = asyncAwaitVersion
         genAsyncCallbackQueue = useAsyncCallbackQueue
         
         switch serverRequestsStyle {
         case .async:
             genAsyncSyncRequests = asyncSyncRequests
             genAsyncAwaitRequests = ""
+            genAsyncAwaitCancellationState = ""
         case .asyncAwait:
             genAsyncSyncRequests = ""
             genAsyncAwaitRequests = asyncAwaitRequests
+            genAsyncAwaitCancellationState = asyncAwaitCancellationState
         case .both:
             genAsyncSyncRequests = asyncSyncRequests
             genAsyncAwaitRequests = asyncAwaitRequests
+            genAsyncAwaitCancellationState = asyncAwaitCancellationState
         }
 
         generateModels()
@@ -243,7 +244,6 @@ class SwaggerMoyaGenerator {
             strings.append("")
             strings.append("// MARK: - Async/Await Requests")
             strings.append("")
-            strings.append(genAsyncAwaitVersion)
             strings.append("extension Server where Target == \(name) {")
             let ops: [String] = operations.map { op -> String in
                 var subs: [String] = []

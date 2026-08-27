@@ -4,10 +4,10 @@ let reserverWords = ["Type", "Self", "self", "Codable", "default", "public", "pr
 let indent = "    "
 var genAccessLevel = "public"
 var genNonClassAccessLevel = "public"
-var genAsyncAwaitVersion = ""
 
 var genAsyncSyncRequests = ""
 var genAsyncAwaitRequests = ""
+var genAsyncAwaitCancellationState = ""
 
 var genAsyncCallbackQueue: Bool = false
 
@@ -289,6 +289,8 @@ extension Result {
 \(genAsyncAwaitRequests)
 }
 
+\(genAsyncAwaitCancellationState)
+
 """
 
 let asyncSyncRequests = """
@@ -362,33 +364,75 @@ let asyncSyncRequests = """
 let asyncAwaitRequests = """
     // MARK: - Async/Await requests
 
-    \(genAsyncAwaitVersion)
-    \(genAccessLevel) func request(_ target: Target, callbackQueue: DispatchQueue? = .none, progress: ProgressBlock? = .none) async throws {
-        var cancellable: Moya.Cancellable?
+    \(genAccessLevel) func request(_ target: Target, callbackQueue: DispatchQueue? = nil, progress: ProgressBlock? = nil) async throws {
+        let state = CancellationState()
 
-        return try await withTaskCancellationHandler {
-            return try await withCheckedThrowingContinuation { continuation in
-                cancellable = self.request(target, callbackQueue: callbackQueue, progress: progress) { responseResult in
-                    continuation.resume(with: responseResult)
+        let result: Result<Void, ServerError> = await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                let cancellable = self.request(target, callbackQueue: callbackQueue, progress: progress) { result in
+                    continuation.resume(returning: result)
                 }
+
+                state.set(cancellable)
             }
-        } onCancel: { [cancellable] in
-            cancellable?.cancel()
+        } onCancel: {
+            state.cancel()
         }
+
+        return try result
+            .mapError(responseErrorMapper)
+            .get()
     }
     
-    \(genAsyncAwaitVersion)
-    \(genAccessLevel) func request<DataType: Decodable>(_ target: Target, callbackQueue: DispatchQueue? = .none, progress: ProgressBlock? = .none) async throws -> DataType {
-        var cancellable: Moya.Cancellable?
+    \(genAccessLevel) func request<DataType: Decodable>(_ target: Target, callbackQueue: DispatchQueue? = nil, progress: ProgressBlock? = nil) async throws -> DataType {
+        let state = CancellationState()
 
-        return try await withTaskCancellationHandler {
-            return try await withCheckedThrowingContinuation { continuation in
-                cancellable = self.request(target, callbackQueue: callbackQueue, progress: progress) { responseResult in
-                    continuation.resume(with: responseResult)
+        let result: Result<DataType, ServerError> = await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                let cancellable = self.request(target, callbackQueue: callbackQueue, progress: progress) { result in
+                    continuation.resume(returning: result)
                 }
+
+                state.set(cancellable)
             }
-        } onCancel: { [cancellable] in
-            cancellable?.cancel()
+        } onCancel: {
+            state.cancel()
+        }
+
+        return try result
+            .mapError(responseErrorMapper)
+            .get()
+    }
+"""
+
+let asyncAwaitCancellationState = """
+private final class CancellationState: @unchecked Sendable {
+    private let lock = NSLock()
+
+    private var cancellable: Moya.Cancellable?
+    private var isCancelled = false
+
+    func set(_ cancellable: Moya.Cancellable) {
+        lock.lock()
+
+        if isCancelled {
+            lock.unlock()
+            cancellable.cancel()
+        } else {
+            self.cancellable = cancellable
+            lock.unlock()
         }
     }
+
+    func cancel() {
+        lock.lock()
+
+        isCancelled = true
+        let cancellable = self.cancellable
+
+        lock.unlock()
+
+        cancellable?.cancel()
+    }
+}
 """
