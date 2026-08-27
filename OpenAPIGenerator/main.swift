@@ -55,9 +55,6 @@ struct OpenAPIGenerator: ParsableCommand {
     @Option(name: .customLong("server-requests-style"), parsing: .next, help: "Generated server requests style - async|asyncawait|both", transform: String.toRequestsStyle)
     var serverRequestsStyle: RequestsStyle = .async
     
-    @Option(name: .customLong("async-await-avail"), parsing: .next, help: "Async / await availability modifier. For example: @available(iOS 15.0.0, *)")
-    var asyncAwaitVersion: String = "@available(iOS 15.0.0, *)"
-    
     @Option(name: .customLong("base-url"), parsing: .next, help: "Custom base server URL", transform: String.toURL)
     var baseURL: URL?
     
@@ -92,7 +89,6 @@ struct OpenAPIGenerator: ParsableCommand {
         generator.generateServer = generateServer
         generator.initDefault = initDefault
         generator.varStruct = varStruct
-        generator.asyncAwaitVersion = asyncAwaitVersion
         generator.syncOnMain = syncOnMain
         generator.useAsyncCallbackQueue = asyncCallback
         generator.run()
