@@ -211,6 +211,7 @@ class ObjectScheme {
     let type: ParameterType
     let title: String
     let properties: [PropertyObject]
+    let `enum`: [String]?
 
     static let placeholder = ObjectScheme(type: "", title: "", properties: [])
 
@@ -218,6 +219,7 @@ class ObjectScheme {
         self.type = .object
         self.title = title
         self.properties = properties
+        self.enum = nil
     }
 
     init(info: [String: Any], processor: SwaggerProcessor) {
@@ -232,5 +234,6 @@ class ObjectScheme {
         self.type = ParameterType(rawValue: info["type"] as! String)!
         self.title = info["title"] as? String ?? "sss"
         self.properties = properties
+        self.enum = info["enum"] as? [String]
     }
 }

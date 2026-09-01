@@ -46,13 +46,17 @@ extension PrimitiveObject {
     }
 }
 
+func swiftStringEnumCases(_ values: [String], indent: String) -> [String] {
+    return values.sorted().map { "\(indent)case \($0.lowercased().escaped) = \"\($0)\"" }
+}
+
 extension PropertyObject {
     var swiftEnum: String? {
         guard let values = self.enum else { return nil }
 
         var strings: [String] = []
         strings.append("\(indent)\(genNonClassAccessLevel) enum \(nameSwiftString.capitalizedFirstLetter.escaped): String, CaseIterable, Codable {")
-        strings.append(contentsOf: values.sorted().map({ "\(indent)\(indent)case \($0.lowercased().escaped) = \"\($0)\"" }))
+        strings.append(contentsOf: swiftStringEnumCases(values, indent: indent + indent))
         strings.append("\(indent)}\n")
         return strings.joined(separator: "\n")
     }
@@ -84,7 +88,19 @@ extension PropertyObject {
 }
 
 extension ObjectScheme {
+    var isStandaloneStringEnum: Bool {
+        type == .string && (self.enum?.isEmpty == false)
+    }
+
     func swiftString(optinalInit: Bool, useVar: Bool) -> String {
+        if isStandaloneStringEnum, let values = self.enum {
+            var strings: [String] = []
+            strings.append("\(genNonClassAccessLevel) enum \(title.escaped): String, CaseIterable, Codable {")
+            strings.append(contentsOf: swiftStringEnumCases(values, indent: indent))
+            strings.append("}")
+            return strings.joined(separator: "\n")
+        }
+
         let sorted = properties.sorted {  $0.name < $1.name }
 
         var strings: [String] = []
